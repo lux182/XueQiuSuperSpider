@@ -17,23 +17,22 @@ import java.util.List;
 public class MarketQuotationsRankCollector extends AbstractCollector<List<Stock>> {
 
     // it can order not only by these four... you can have a try
-    public static final String ORDER_BY_PERCENT = "percent";
-    public static final String ORDER_BY_VOLUME = "volume";
-    public static final String ORDER_BY_AMOUNT = "amount";
+    public static final String ORDER_BY_PERCENT       = "percent";
+    public static final String ORDER_BY_VOLUME        = "volume";
+    public static final String ORDER_BY_AMOUNT        = "amount";
     public static final String ORDER_BY_TURNOVER_RATE = "turnover_rate";
 
-
-    public static final int TOPK_MAX_SHRESHOLD = 20;
+    public static final int    TOPK_MAX_SHRESHOLD     = 20;
 
     public enum StockType {
-        SH_A("sha"),
-        SH_B("shb"),
-        SZ_A("sza"),
-        SZ_B("szb"),
-        GROWTH_ENTERPRISE_BOARD("cyb"),
-        SMALL_MEDIUM_ENTERPRISE_BOARD("zxb"),
-        HK("hk"),
-        US("us");
+                           SH_A("sha"),
+                           SH_B("shb"),
+                           SZ_A("sza"),
+                           SZ_B("szb"),
+                           GROWTH_ENTERPRISE_BOARD("cyb"),
+                           SMALL_MEDIUM_ENTERPRISE_BOARD("zxb"),
+                           HK("hk"),
+                           US("us");
 
         private String val;
 
@@ -44,9 +43,9 @@ public class MarketQuotationsRankCollector extends AbstractCollector<List<Stock>
     }
 
     private final StockType stockType;
-    private final String orderPattern;
-    private boolean asc;
-    private final int topK;
+    private final String    orderPattern;
+    private boolean         asc;
+    private final int       topK;
 
     public MarketQuotationsRankCollector(StockType stockType, String orderPattern) {
         this(stockType, orderPattern, 10);
@@ -56,18 +55,14 @@ public class MarketQuotationsRankCollector extends AbstractCollector<List<Stock>
         this(null, stockType, orderPattern, topK);
     }
 
-    public MarketQuotationsRankCollector(
-            TimeWaitingStrategy strategy,
-            StockType stockType,
-            String orderPattern,
-            int topK
-            ) {
+    public MarketQuotationsRankCollector(TimeWaitingStrategy strategy, StockType stockType,
+                                         String orderPattern, int topK) {
 
         super(strategy);
 
         orderPattern = orderPattern == null ? "" : orderPattern;
 
-        if(!isLegal(orderPattern) || topK <= 0)
+        if (!isLegal(orderPattern) || topK <= 0)
             throw new IllegalArgumentException("Not legal or not support yet exception");
 
         this.stockType = stockType == null ? StockType.SH_A : stockType;
@@ -78,10 +73,9 @@ public class MarketQuotationsRankCollector extends AbstractCollector<List<Stock>
 
     private boolean isLegal(String orderPattern) {
 
-        return orderPattern.equals(ORDER_BY_AMOUNT) ||
-                orderPattern.equals(ORDER_BY_PERCENT) ||
-                orderPattern.equals(ORDER_BY_TURNOVER_RATE) ||
-                orderPattern.equals(ORDER_BY_VOLUME);
+        return orderPattern.equals(ORDER_BY_AMOUNT) || orderPattern.equals(ORDER_BY_PERCENT)
+               || orderPattern.equals(ORDER_BY_TURNOVER_RATE)
+               || orderPattern.equals(ORDER_BY_VOLUME);
 
     }
 
@@ -99,15 +93,13 @@ public class MarketQuotationsRankCollector extends AbstractCollector<List<Stock>
     public List<Stock> collectLogic() throws Exception {
         String target = URLMapper.MARKET_QUOTATIONS_RANK_JSON.toString();
         RequestParaBuilder builder = new RequestParaBuilder(target)
-                .addParameter("stockType", stockType.val)
-                .addParameter("order", asc ? "asc" : "desc")
-                .addParameter("orderBy", orderPattern)
-                .addParameter("size", topK)
-                .addParameter("page", 1)
-                .addParameter("column", "symbol%2Cname");
+            .addParameter("stockType", stockType.val).addParameter("order", asc ? "asc" : "desc")
+            .addParameter("orderBy", orderPattern).addParameter("size", topK)
+            .addParameter("page", 1).addParameter("column", "symbol%2Cname");
         URL url = new URL(builder.build());
         String json = request(url);
         JsonNode node = mapper.readTree(json);
+
         return processNode(node);
     }
 

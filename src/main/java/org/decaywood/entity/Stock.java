@@ -13,7 +13,7 @@ import java.util.Date;
  */
 public class Stock implements DeepCopy<Stock> {
 
-    private static final String Stock_Page_PreFix = "http://xueqiu.com/S/";
+    private static final String Stock_Page_PreFix = "https://xueqiu.com/S/";
 
     private final String stockName; //股票名称
     private final String stockNo; //股票代码

@@ -17,16 +17,15 @@ import java.util.zip.GZIPInputStream;
 public class HttpRequestHelper {
 
     private Map<String, String> config;
-    private boolean post;
-    private boolean gzip;
+    private boolean             post;
+    private boolean             gzip;
 
     public HttpRequestHelper(String webSite) {
         this.config = new HashMap<>();
-        this.gzipDecode()
-                .addToHeader("Referer", webSite)
-                .addToHeader("Cookie", FileLoader.loadCookie(webSite))
-                .addToHeader("Host", "xueqiu.com")
-                .addToHeader("Accept-Encoding", "gzip,deflate,sdch");
+        this.gzipDecode().addToHeader("Referer", webSite)
+            .addToHeader("Cookie",
+                "s=34ue11vp28; xq_a_token=b6eecee1abad844d30250c0af58bfa36b2851f1d; xq_r_token=8bd931f3143a3c125db60e290232340b0a371472")
+            .addToHeader("Host", "xueqiu.com").addToHeader("Accept-Encoding", "gzip");
     }
 
     public HttpRequestHelper post() {
@@ -53,27 +52,32 @@ public class HttpRequestHelper {
         return request(url, this.config);
     }
 
-
     public String request(URL url, Map<String, String> config) throws IOException {
         HttpURLConnection httpURLConn = null;
-        try
-        {
-            httpURLConn= (HttpURLConnection)url.openConnection();
-            if(post) httpURLConn.setRequestMethod("Post");
+        try {
+            httpURLConn = (HttpURLConnection) url.openConnection();
+            if (post)
+                httpURLConn.setRequestMethod("Post");
             httpURLConn.setDoOutput(true);
-            for (Map.Entry<String, String> entry : config.entrySet()) httpURLConn.setRequestProperty(entry.getKey(), entry.getValue());
+            for (Map.Entry<String, String> entry : config.entrySet()) {
+                httpURLConn.setRequestProperty(entry.getKey(), entry.getValue());
+            }
+
             httpURLConn.connect();
-            InputStream in =httpURLConn.getInputStream();
-            if(gzip) in = new GZIPInputStream(in);
+            InputStream in = httpURLConn.getInputStream();
+            if (gzip)
+                in = new GZIPInputStream(in);
             BufferedReader bd = new BufferedReader(new InputStreamReader(in));
             StringBuilder builder = new StringBuilder();
             String text;
-            while((text=bd.readLine())!=null) builder.append(text);
+            while ((text = bd.readLine()) != null)
+                builder.append(text);
             return builder.toString();
+        } finally {
+            if (httpURLConn != null)
+                httpURLConn.disconnect();
         }
-        finally { if(httpURLConn!=null) httpURLConn.disconnect(); }
     }
-
 
     public static void updateCookie(String website) throws Exception {
         URL url = new URL(website);
@@ -82,7 +86,5 @@ public class HttpRequestHelper {
         String cookie = connection.getHeaderField("Set-Cookie");
         FileLoader.updateCookie(cookie, website);
     }
-
-
 
 }

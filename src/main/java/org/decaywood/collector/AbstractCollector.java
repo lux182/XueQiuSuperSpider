@@ -58,7 +58,7 @@ public abstract class AbstractCollector<T> implements Supplier<T> {
                 } catch (Exception e) {
                     if(!(e instanceof IOException)) throw e;
                     System.out.println("Collector: Network busy Retrying -> " + loopTime + " times");
-                    HttpRequestHelper.updateCookie(webSite);
+//                    HttpRequestHelper.updateCookie(webSite);
                     this.strategy.waiting(loopTime++);
                 }
             }

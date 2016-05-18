@@ -12,8 +12,7 @@ import java.util.List;
  * @date: 2015/11/27 0:27
  */
 
-
-public class DateRangeCollector extends AbstractCollector <List<Date>> {
+public class DateRangeCollector extends AbstractCollector<List<Date>> {
 
     private final Date from;
     private final Date to;
@@ -24,7 +23,8 @@ public class DateRangeCollector extends AbstractCollector <List<Date>> {
 
     public DateRangeCollector(TimeWaitingStrategy strategy, Date from, Date to) {
         super(strategy);
-        if(from == null || to == null || from.after(to)) throw new IllegalArgumentException();
+        if (from == null || to == null || from.after(to))
+            throw new IllegalArgumentException();
         this.from = from;
         this.to = to;
     }
@@ -36,7 +36,7 @@ public class DateRangeCollector extends AbstractCollector <List<Date>> {
         Calendar calendar = Calendar.getInstance();
         StringBuilder builder = new StringBuilder();
 
-        for (Date i = from; i.before(to) || i.equals(to); ) {
+        for (Date i = from; i.before(to) || i.equals(to);) {
 
             dates.add(i);
 

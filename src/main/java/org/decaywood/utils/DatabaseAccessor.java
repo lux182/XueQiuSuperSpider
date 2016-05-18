@@ -17,29 +17,25 @@ public class DatabaseAccessor {
         public static final DatabaseAccessor ACCESSOR = new DatabaseAccessor();
     }
 
-    private String jdbcDriver = ""; // 数据库驱动
-    private String dbUrl = ""; // 数据库 URL
-    private String dbUsername = ""; // 数据库用户名
-    private String dbPassword = ""; // 数据库用户密码
-    private int initialConnections = 10; // 连接池的初始大小
-    private int autoIncreaseStep = 5;// 连接池自增步进
-    private int maxConnections = 50; // 连接池最大的大小
-    private List<PooledConnection> connections = null; // 存放连接池中数据库连接的向量 , 初始时为 null
-
+    private String                 jdbcDriver         = "";   // 数据库驱动
+    private String                 dbUrl              = "";   // 数据库 URL
+    private String                 dbUsername         = "";   // 数据库用户名
+    private String                 dbPassword         = "";   // 数据库用户密码
+    private int                    initialConnections = 10;   // 连接池的初始大小
+    private int                    autoIncreaseStep   = 5;    // 连接池自增步进
+    private int                    maxConnections     = 50;   // 连接池最大的大小
+    private List<PooledConnection> connections        = null; // 存放连接池中数据库连接的向量 , 初始时为 null
 
     public DatabaseAccessor() {
         this(
-                "com.mysql.jdbc.Driver",
-                "jdbc:mysql://localhost:3306/XueQiuSpider",
-                "root",
-                "123456"
-        );
+            //                "com.mysql.jdbc.Driver",
+            //                "jdbc:mysql://localhost:3306/XueQiuSpider",
+            //                "root",
+            //                "123456"
+            "org.sqlite.JDBC", "jdbc:sqlite:test.db", "", "");
     }
 
-
-
-    public DatabaseAccessor(String jdbcDriver, String dbUrl, String dbUsername,
-                          String dbPassword) {
+    public DatabaseAccessor(String jdbcDriver, String dbUrl, String dbUsername, String dbPassword) {
 
         this.jdbcDriver = jdbcDriver;
         this.dbUrl = dbUrl;
@@ -54,11 +50,10 @@ public class DatabaseAccessor {
 
     }
 
-
-
     public synchronized void createPool() throws Exception {
 
-        if (connections != null) return;
+        if (connections != null)
+            return;
 
         Class.forName(this.jdbcDriver);
         connections = new CopyOnWriteArrayList<>();
@@ -67,11 +62,10 @@ public class DatabaseAccessor {
 
     }
 
-
-
     public synchronized Connection getConnection() {
 
-        if (connections == null) return null;
+        if (connections == null)
+            return null;
         Connection conn;
         // if no available connection retry
         while (true) {
@@ -87,8 +81,6 @@ public class DatabaseAccessor {
 
     }
 
-
-
     public void returnConnection(Connection conn) {
 
         if (connections == null) {
@@ -97,14 +89,10 @@ public class DatabaseAccessor {
         }
 
         PooledConnection connection = this.connections.stream()
-                .filter(x -> x.getConnection() == conn)
-                .findAny()
-                .orElse(emptyPooledConn);
+            .filter(x -> x.getConnection() == conn).findAny().orElse(emptyPooledConn);
         connection.setBusy(false);
 
     }
-
-
 
     public synchronized void refreshConnections() throws SQLException {
 
@@ -114,7 +102,8 @@ public class DatabaseAccessor {
         }
 
         for (PooledConnection connection : connections) {
-            if (connection.isBusy()) wait(5000);
+            if (connection.isBusy())
+                wait(5000);
             // 关闭此连接，用一个新的连接代替它。
             closeConnection(connection.getConnection());
             connection.setConnection(newConnection());
@@ -122,7 +111,6 @@ public class DatabaseAccessor {
         }
 
     }
-
 
     public synchronized void closeConnectionPool() throws SQLException {
 
@@ -143,12 +131,12 @@ public class DatabaseAccessor {
 
     }
 
-
     private void createConnections(int numConnections) throws SQLException {
 
         for (int i = 0; i < numConnections; i++) {
             try {
-                if (this.maxConnections > 0 && this.connections.size() >= this.maxConnections) break;
+                if (this.maxConnections > 0 && this.connections.size() >= this.maxConnections)
+                    break;
                 connections.add(new PooledConnection(newConnection()));
             } catch (SQLException e) {
                 System.out.println(" 创建数据库连接失败！ " + e.getMessage());
@@ -158,12 +146,9 @@ public class DatabaseAccessor {
         }
     }
 
-
-
     private Connection newConnection() throws SQLException {
 
-        Connection conn = DriverManager.getConnection(dbUrl, dbUsername,
-                dbPassword);
+        Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
 
         if (connections.size() == 0) {
 
@@ -180,8 +165,6 @@ public class DatabaseAccessor {
 
     }
 
-
-
     private Connection getFreeConnection() throws Exception {
 
         Connection conn = findFreeConnection();
@@ -194,18 +177,13 @@ public class DatabaseAccessor {
         return conn;
     }
 
-
     private Connection findFreeConnection() throws Exception {
 
-        PooledConnection connection = connections
-                .stream()
-                .filter(x -> !x.isBusy())
-                .findAny().get();
+        PooledConnection connection = connections.stream().filter(x -> !x.isBusy()).findAny().get();
         connection.setBusy(true);
         return connection.getConnection();
 
     }
-
 
     private void closeConnection(Connection conn) {
 
@@ -216,7 +194,6 @@ public class DatabaseAccessor {
         }
 
     }
-
 
     private void wait(int mSeconds) {
 
@@ -235,9 +212,8 @@ public class DatabaseAccessor {
 
     class PooledConnection {
 
-        private Connection connection = null;// 数据库连接
-        private volatile boolean busy = false; // 此连接是否正在使用的标志，默认没有正在使用
-
+        private Connection       connection = null;  // 数据库连接
+        private volatile boolean busy       = false; // 此连接是否正在使用的标志，默认没有正在使用
 
         public PooledConnection(Connection connection) {
             this.connection = connection;
@@ -260,6 +236,5 @@ public class DatabaseAccessor {
         }
 
     }
-
 
 }
